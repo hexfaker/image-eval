@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ evaluation.title }} &mdash; {{ assignment_no }}{% endblock %}
+{% block content %}
+    <div class="w3-row">
+        <div class="w3-half w3-container" align="middle">
+            <img src="{{ question.left_image.url }}"/>
+        </div>
+        <div class="w3-half w3-container" align="middle">
+            <img src="{{ question.right_image.url }}"/>
+        </div>
+    </div>
+    <form class="w3-container" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="assignment_no" value="{{ assignment_no }}"/>
+        <input type="hidden" name="session_id" value="{{ session.id }}"/>
+        <div class="w3=row-padding">
+            <div class="w3-half w3-center">
+                <input class="w3-radio" type="radio" name="image" value="left"/>
+                <label>Left</label>
+            </div>
+            <div class="w3-half w3-center">
+                <input class="w3-radio" type="radio" name="image" value="right"/>
+                <label>Right</label>
+            </div>
+        </div>
+        <div class="w3-center">
+            <input type="submit" class="w3-button w3-red" value="Submit"/>
+        </div>
+    </form>
+
+{% endblock %}

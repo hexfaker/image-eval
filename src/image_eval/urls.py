@@ -22,6 +22,7 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('sessions/<str:id>/', views.session_view, name='session'),
+    path('sessions/new', views.new_session, name='new_session'),
+    path('sessions/<str:hash>/', views.session_view, name='session'),
     path('admin/', admin.site.urls)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

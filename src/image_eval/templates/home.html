@@ -2,5 +2,8 @@
 {% block title %}Home{% endblock %}
 {% block content %}
     <h1>Image evaluation (MSU Style Transfer Group)</h1>
-    <a class="w3-btn" href="/session/xxxx/">GO</a>
+    <form action="{% url 'new_session' %}" method="post">
+        {%  csrf_token %}
+        <input type="submit" value="GO"/>
+    </form>
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ evaluation.title }} &mdash; {{ assignment_no }}{% endblock %}
+{% block title %}{{ session.evaluation.title }} &mdash; {{ assignment_no }}{% endblock %}
 {% block content %}
     <div class="w3-row">
         <div class="w3-half w3-container" align="middle">
@@ -11,15 +11,14 @@
     </div>
     <form class="w3-container" method="post">
         {% csrf_token %}
-        <input type="hidden" name="assignment_no" value="{{ assignment_no }}"/>
-        <input type="hidden" name="session_id" value="{{ session.id }}"/>
+        <input type="hidden" name="question_id" value="{{ question.id }}"/>
         <div class="w3=row-padding">
             <div class="w3-half w3-center">
-                <input class="w3-radio" type="radio" name="image" value="left"/>
+                <input class="w3-radio" type="radio" name="answer" value="0"/>
                 <label>Left</label>
             </div>
             <div class="w3-half w3-center">
-                <input class="w3-radio" type="radio" name="image" value="right"/>
+                <input class="w3-radio" type="radio" name="answer" value="1"/>
                 <label>Right</label>
             </div>
         </div>

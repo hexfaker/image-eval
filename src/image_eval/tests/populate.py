@@ -33,6 +33,35 @@ def populate():
         right_image=ContentFile(b1, 'ri1.png')
     ).save()
 
+    e2 = Evaluation(title='Models 1', created_at=timezone.now(), type='CLS', total_questions=3)
+    e2.save()
+
+    answers = json.dumps(['Class 1', 'Class 2'])
+
+    ImageClassificationQuestion(
+        evaluation=e2,
+        text='Select image class',
+        answers=answers,
+        order=0,
+        image=ContentFile(b1, 'i0.png')
+    ).save()
+
+    ImageClassificationQuestion(
+        evaluation=e2,
+        text='Select image class',
+        order=1,
+        answers=answers,
+        image=ContentFile(b2, 'i1.png')
+    ).save()
+
+    ImageClassificationQuestion(
+        evaluation=e2,
+        text='Select image class',
+        answers=answers,
+        order=2,
+        image=ContentFile(b1, 'i2.png')
+    ).save()
+
 
 def to_bytes(image: Image.Image):
     stream = BytesIO()

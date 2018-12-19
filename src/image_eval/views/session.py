@@ -42,9 +42,11 @@ def session_view(request: HttpRequest, hash: str):
             question=current_question.imageselectionquestion,
             evaluation=session.evaluation,
         ))
-    else:
-        raise NotImplemented()
-
+    elif hasattr(current_question, 'imageclassificationquestion'):
+        return render(request, 'classification_question.html', dict(
+            question=current_question.imageclassificationquestion,
+            evaluation=session.evaluation,
+        ))
 
 def new_session(request: HttpRequest):
     assert request.method == 'POST'

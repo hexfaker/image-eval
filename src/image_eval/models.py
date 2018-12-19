@@ -1,6 +1,6 @@
 import datetime
 from hashlib import md5
-
+import json
 from django.db import models
 
 
@@ -25,6 +25,11 @@ class Question(models.Model):
 class ImageClassificationQuestion(Question):
     image = models.ImageField()
     answers = models.TextField()
+
+    @property
+    def choices(self):
+        parsed_answers = json.loads(self.answers)
+        return list(zip(range(len(parsed_answers)), parsed_answers))
 
 
 class ImageSelectionQuestion(Question):

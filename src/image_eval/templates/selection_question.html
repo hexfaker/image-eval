@@ -1,0 +1,19 @@
+{% extends "question.html" %}
+{% block question-area %}
+    <div class="w3-half w3-container w3-center">
+        <img src="{{ question.left_image.url }}"/>
+    </div>
+    <div class="w3-half w3-container w3-center">
+        <img src="{{ question.right_image.url }}"/>
+    </div>
+{% endblock %}
+{% block answers-area %}
+    <div class="w3-half w3-center">
+        <input class="w3-radio" type="radio" name="answer" value="0"/>
+        <label>Left</label>
+    </div>
+    <div class="w3-half w3-center">
+        <input class="w3-radio" type="radio" name="answer" value="1"/>
+        <label>Right</label>
+    </div>
+{% endblock %}

@@ -38,7 +38,7 @@ def session_view(request: HttpRequest, hash: str):
     current_question = Question.objects.get(evaluation=session.evaluation, order=next_order)
 
     if hasattr(current_question, 'imageselectionquestion'):
-        return render(request, 'image_selection_question.html', dict(
+        return render(request, 'selection_question.html', dict(
             question=current_question.imageselectionquestion,
             evaluation=session.evaluation,
         ))

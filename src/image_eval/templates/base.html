@@ -4,13 +4,20 @@
     <title>{% block title %}{% endblock %}</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-{% block content %}{% endblock %}
+<header class="w3-container w3-indigo w3-card">
+    <a class="w3-button" href="/"><b>Image evaluation (MSU Style Transfer Group)</b></a>
+</header>
+<div class="w3-margin">
+    {% block content %}{% endblock %}
+</div>
 
 {% block footer %}
-    <hr>
-    <p class="w3-center">2018</p>
+    <footer class="w3-container w3-bottom w3-indigo w3-card">
+        <p class="w3-center">2018</p>
+    </footer>
 {% endblock %}
 </body>
 </html>

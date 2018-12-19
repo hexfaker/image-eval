@@ -5,14 +5,14 @@ from django.db import models
 
 
 class Evaluation(models.Model):
-    TYPES = (
-        ('SEL', 'Image selection'),
-        ('CLS', 'Image classification')
-    )
+    TYPES = {
+        'SEL': 'Image selection',
+        'CLS': 'Image classification'
+    }
 
     title = models.CharField(max_length=100)
     created_at = models.DateTimeField()
-    type = models.CharField(max_length=10, choices=TYPES)
+    type = models.CharField(max_length=10, choices=TYPES.items())
     total_questions = models.IntegerField()
 
 

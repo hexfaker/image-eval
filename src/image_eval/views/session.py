@@ -40,7 +40,7 @@ def session_view(request: HttpRequest, hash: str):
     if hasattr(current_question, 'imageselectionquestion'):
         return render(request, 'image_selection_question.html', dict(
             question=current_question.imageselectionquestion,
-            assignment_no=current_question.order + 1
+            evaluation=session.evaluation,
         ))
     else:
         raise NotImplemented()
@@ -49,7 +49,11 @@ def session_view(request: HttpRequest, hash: str):
 def new_session(request: HttpRequest):
     assert request.method == 'POST'
 
-    session = Session.create_new(Evaluation.objects.all()[0], '', '')
+    evaluation_id = int(request.POST['evaluation_id'])
+    comment = request.POST['comment']
+    name = request.POST['name']
+
+    session = Session.create_new(Evaluation.objects.get(id=evaluation_id), name, comment)
     session.save()
     return redirect('session', hash=session.hash, permanent=True)
 

@@ -54,8 +54,12 @@ class Session(models.Model):
         )
 
     @property
-    def completed(self):
+    def completed(self) -> bool:
         return self.completed_at is not None
+
+    def complete(self) -> 'Session':
+        self.completed_at = datetime.datetime.now()
+        return self
 
 
 class Assignment(models.Model):

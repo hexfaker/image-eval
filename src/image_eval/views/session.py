@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Max
 from django.http import HttpRequest
 from django.shortcuts import render, redirect
 
@@ -8,24 +8,32 @@ from ..models import Question, Evaluation, Session, Assignment, ImageSelectionQu
 def session_view(request: HttpRequest, hash: str):
     session = Session.objects.get(hash=hash)
 
-    if request.method == 'POST':
-        question = Question.objects.get(id=int(request.POST['question_id']))
-        answer = int(request.POST['answer'])
+    if not session.completed:
+        if request.method == 'POST':
+            question = Question.objects.get(id=int(request.POST['question_id']))
+            answer = int(request.POST['answer'])
 
-        next_order = question.order + 1
-        
-        ass = Assignment(question=question, session=session, answer=answer)
-        ass.save()
-    else:
-        done_questions: QuerySet \
-            = Assignment.objects.filter(session=session)\
-            .order_by('-question__order')\
-            .select_related('question')
+            next_order = question.order + 1
 
-        if done_questions.exists():
-            next_order = done_questions[0].question.order + 1
+            ass = Assignment(question=question, session=session, answer=answer)
+            ass.save()
         else:
-            next_order = 0
+            done_questions: QuerySet = Assignment.objects.filter(session=session)
+
+            if done_questions.exists():
+                next_order = done_questions.aggregate(Max('question__order'))['order__max'] + 1
+            else:
+                next_order = 0
+
+        max_question_no = Question.objects \
+            .filter(evaluation=session.evaluation) \
+            .aggregate(Max('order'))['order__max']
+
+        if max_question_no < next_order:
+            session.complete().save()
+
+    if session.completed:
+        return render(request, 'session_completed.html')
 
     current_question = Question.objects.get(evaluation=session.evaluation, order=next_order)
 

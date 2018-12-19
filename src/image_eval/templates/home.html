@@ -13,7 +13,7 @@
                 </select>
             </div>
             <div class="w3-row w3-margin w3-container">
-                <input type="text" name="name" placeholder="Your name"/>
+                <input type="text" {% if error %}class="w3-border-red w3-border" {% endif %} name="name" placeholder="Your name"/>
             </div>
             <div class="w3-row w3-margin">
                 <textarea name="comment" rows="3" cols="50" placeholder="Optional comment"></textarea>

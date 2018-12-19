@@ -2,7 +2,27 @@ from django.db.models import QuerySet, Max
 from django.http import HttpRequest
 from django.shortcuts import render, redirect
 
-from ..models import Question, Evaluation, Session, Assignment, ImageSelectionQuestion
+from ..models import Question, Evaluation, Session, Assignment
+from .home import home
+
+
+def render_question(request, session, question_no, error=False):
+    current_question = Question.objects.get(evaluation=session.evaluation, order=question_no)
+
+    if hasattr(current_question, 'imageselectionquestion'):
+        return render(request, 'selection_question.html', dict(
+            question=current_question.imageselectionquestion,
+            evaluation=session.evaluation,
+            error=error
+        ))
+    elif hasattr(current_question, 'imageclassificationquestion'):
+        return render(request, 'classification_question.html', dict(
+            question=current_question.imageclassificationquestion,
+            evaluation=session.evaluation,
+            error=error
+        ))
+    else:
+        raise NotImplemented
 
 
 def session_view(request: HttpRequest, hash: str):
@@ -11,6 +31,10 @@ def session_view(request: HttpRequest, hash: str):
     if not session.completed:
         if request.method == 'POST':
             question = Question.objects.get(id=int(request.POST['question_id']))
+
+            if 'answer' not in request.POST:
+                return render_question(request, session, question.order, True)
+
             answer = int(request.POST['answer'])
 
             next_order = question.order + 1
@@ -35,21 +59,14 @@ def session_view(request: HttpRequest, hash: str):
     if session.completed:
         return render(request, 'session_completed.html')
 
-    current_question = Question.objects.get(evaluation=session.evaluation, order=next_order)
+    return render_question(request, session, next_order)
 
-    if hasattr(current_question, 'imageselectionquestion'):
-        return render(request, 'selection_question.html', dict(
-            question=current_question.imageselectionquestion,
-            evaluation=session.evaluation,
-        ))
-    elif hasattr(current_question, 'imageclassificationquestion'):
-        return render(request, 'classification_question.html', dict(
-            question=current_question.imageclassificationquestion,
-            evaluation=session.evaluation,
-        ))
 
 def new_session(request: HttpRequest):
     assert request.method == 'POST'
+
+    if len(request.POST['name']) == 0:
+        return home(request, True)
 
     evaluation_id = int(request.POST['evaluation_id'])
     comment = request.POST['comment']

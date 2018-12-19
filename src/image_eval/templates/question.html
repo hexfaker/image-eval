@@ -10,6 +10,9 @@
             {% block question-area %}
             {% endblock %}
         </div>
+        {% if error %}
+            <div class="w3-container w3-margin w3-red">Select some answer please!</div>
+        {% endif %}
         <div class="w3-row">
             <form class="w3-container" method="post">
                 {% csrf_token %}

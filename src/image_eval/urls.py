@@ -24,5 +24,6 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('sessions/new', views.new_session, name='new_session'),
     path('sessions/<str:hash>/', views.session_view, name='session'),
+    path('evaluations/<int:id>/results.json', views.export_results, name='export_result'),
     path('admin/', admin.site.urls)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

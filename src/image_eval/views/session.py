@@ -1,5 +1,7 @@
+import json
+
 from django.db.models import QuerySet, Max
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 
 from ..models import Question, Evaluation, Session, Assignment
@@ -77,4 +79,17 @@ def new_session(request: HttpRequest):
     return redirect('session', hash=session.hash, permanent=True)
 
 
-__all__ = ['session_view', 'new_session']
+def export_results(request: HttpRequest, id: int):
+    evaluation = Evaluation.objects.get(id=id)
+    questions = Question.objects.filter(evaluation=evaluation)
+
+    result = {}
+    for q in questions:
+        answers = [a.answer for a in Assignment.objects.filter(question=q)]
+        result[q.order] = answers
+    response = HttpResponse(content_type="application/json")
+    json.dump(result, response)
+    return response
+
+
+__all__ = ['session_view', 'new_session', 'export_results']

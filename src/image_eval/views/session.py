@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.auth.decorators import login_required
 from django.db.models import QuerySet, Max
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
@@ -47,7 +48,8 @@ def session_view(request: HttpRequest, hash: str):
             done_questions: QuerySet = Assignment.objects.filter(session=session)
 
             if done_questions.exists():
-                next_order = done_questions.aggregate(Max('question__order'))['order__max'] + 1
+                next_order = done_questions.aggregate(Max('question__order'))['question__order__max']
+
             else:
                 next_order = 0
 
@@ -78,14 +80,15 @@ def new_session(request: HttpRequest):
     session.save()
     return redirect('session', hash=session.hash, permanent=True)
 
-
+@login_required()
 def export_results(request: HttpRequest, id: int):
     evaluation = Evaluation.objects.get(id=id)
     questions = Question.objects.filter(evaluation=evaluation)
 
     result = {}
     for q in questions:
-        answers = [a.answer for a in Assignment.objects.filter(question=q)]
+        answers = [a.answer for a in
+                   Assignment.objects.filter(question=q, session__completed_at__isnull=False)]
         result[q.order] = answers
     response = HttpResponse(content_type="application/json")
     json.dump(result, response)

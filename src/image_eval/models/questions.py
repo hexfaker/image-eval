@@ -2,6 +2,8 @@ import json
 
 from django.db import models
 from django.contrib import admin
+from django.db.models import QuerySet
+from django.shortcuts import redirect
 
 
 class Evaluation(models.Model):
@@ -14,6 +16,9 @@ class Evaluation(models.Model):
     created_at = models.DateTimeField()
     type = models.CharField(max_length=10, choices=TYPES.items())
     total_questions = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.title} ({Evaluation.TYPES[self.type]})'
 
 
 class Question(models.Model):
@@ -38,8 +43,13 @@ class ImageSelectionQuestion(Question):
 
 
 class EvaluationAdmin(admin.ModelAdmin):
-    list_display = ['title', 'created_at', 'type', 'total_questions']
+    list_display = ['id', 'title', 'created_at', 'type', 'total_questions']
     ordering = ['created_at']
+
+    actions = ['export_result']
+
+    def export_result(self, request, queryset: QuerySet):
+        return redirect('export_result', id=queryset.all()[0].id)
 
 
 admin.site.register(Evaluation, EvaluationAdmin)

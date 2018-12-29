@@ -1,15 +1,17 @@
 {% extends "question.html" %}
 {% block question-area %}
     <div class="w3-content w3-container w3-center">
-        <img src="{{ question.image.url }}"/>
+        <img src="{{ question.image.url }}" style="max-height: 400px;width: 100%; object-fit: contain"/>
     </div>
 {% endblock %}
 {% block answers-area %}
     <div class="w3-container w3-content w3-center">
         {% for value, name in question.choices %}
             <div class="w3-row">
-                <input class="w3-radio" type="radio" name="answer" value="{{ value }}">
-                <label>{{ name }}</label>
+                <label>
+                    <input class="w3-radio" type="radio" name="answer" value="{{ value }}">
+                    {{ name }}
+                </label>
             </div>
         {% endfor %}
     </div>

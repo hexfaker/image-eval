@@ -49,7 +49,6 @@ def session_view(request: HttpRequest, hash: str):
 
             if done_questions.exists():
                 next_order = done_questions.aggregate(Max('question__order'))['question__order__max']
-
             else:
                 next_order = 0
 

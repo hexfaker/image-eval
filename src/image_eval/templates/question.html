@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ session.evaluation.title }} &mdash; {{ question.order|add:"1" }}{% endblock %}
+{% block title %}{{ evaluation.title }}: {{ question.order|add:"1" }}/{{ evaluation.total_questions }}{% endblock %}
 {% block content %}
     <div class="w3-container w3-center">
         <p class="w3-large">{{ evaluation.title }}: {{ question.order|add:"1" }}/{{ evaluation.total_questions }}</p>
@@ -17,7 +17,7 @@
             <form class="w3-container" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="question_id" value="{{ question.id }}"/>
-                <div class="w3=row-padding">
+                <div class="w3-row-padding">
                     {% block answers-area %}
                     {% endblock %}
                 </div>

@@ -3,6 +3,7 @@ import os
 from typing import Iterable
 from zipfile import ZipFile
 
+import yaml
 from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.contrib import admin
@@ -67,6 +68,9 @@ class EvaluationForm(ModelForm):
 
 @admin.register(Evaluation)
 class EvaluationAdmin(admin.ModelAdmin):
+    class InvalidZip(Exception):
+        pass
+
     list_display = ['id', 'title', 'type', 'total_questions', 'created_at']
     ordering = ['created_at']
     actions = ['export_result']
@@ -90,7 +94,12 @@ class EvaluationAdmin(admin.ModelAdmin):
                                                 total_questions=0)
             evaluation.save()
 
-            evaluation.total_questions = self.make_selection_questions_from_zip(
+            if data['type'] == 'SEL':
+                zip_parser = self.make_selection_questions_from_zip
+            else:
+                zip_parser = self.make_classification_questions_from_zip
+
+            evaluation.total_questions = zip_parser(
                 data['images'],
                 data['question'],
                 evaluation
@@ -100,34 +109,74 @@ class EvaluationAdmin(admin.ModelAdmin):
 
     @staticmethod
     def make_selection_questions_from_zip(zip_file_stream, question_text, evaluation):
-        with ZipFile(zip_file_stream) as images:
-            total_questions = 0
-            left_image_names: Iterable[str] = \
-                filter(lambda s: s.startswith('left/'), images.namelist())
+        try:
+            with ZipFile(zip_file_stream) as images:
+                total_questions = EvaluationAdmin.get_total_questions(images.namelist(), 'left')
 
-            for name in left_image_names:
-                fname = name.split('/')[1]
+                if total_questions == 0:
+                    raise Exception()
 
-                if len(fname) != 0:
-                    no = int(os.path.splitext(fname)[0]) + 1
+                questions = []
+                for no in range(total_questions):
+                    left_image_bytes = images.read(f'left/{no}.jpg')
+                    right_image_bytes = images.read(f'right/{no}.jpg')
 
-                    if no > total_questions:
-                        total_questions = no
+                    q = ImageSelectionQuestion(
+                        evaluation=evaluation, text=question_text,
+                        order=no,
+                        left_image=ContentFile(left_image_bytes, f'{evaluation.id}_{no}_l.jpg'),
+                        right_image=ContentFile(right_image_bytes, f'{evaluation.id}_{no}_r.jpg')
+                    )
+                    q.save()
+                    questions.append(q)
+            return total_questions
+        except Exception:
+            raise Exception('Zip parsing failed. Most likely the structure is wrong')
 
-            questions = []
-            for no in range(total_questions):
-                left_image_bytes = images.read(f'left/{no}.jpg')
-                right_image_bytes = images.read(f'right/{no}.jpg')
+    @staticmethod
+    def get_total_questions(fnames, prefix):
+        total_questions = 0
+        left_image_names: Iterable[str] = \
+            filter(lambda s: s.startswith(prefix), fnames)
 
-                q = ImageSelectionQuestion(
-                    evaluation=evaluation, text=question_text,
-                    order=no,
-                    left_image=ContentFile(left_image_bytes, f'{evaluation.id}_{no}_l.jpg'),
-                    right_image=ContentFile(right_image_bytes, f'{evaluation.id}_{no}_r.jpg')
-                )
-                q.save()
-                questions.append(q)
+        for name in left_image_names:
+            fname = name.split('/')[1]
+
+            if len(fname) != 0:
+                no = int(os.path.splitext(fname)[0]) + 1
+
+                if no > total_questions:
+                    total_questions = no
+
         return total_questions
+
+    @staticmethod
+    def make_classification_questions_from_zip(zip_file_stream, question_text, evaluation):
+        try:
+            with ZipFile(zip_file_stream) as images:
+                total_questions = EvaluationAdmin.get_total_questions(images.namelist(), 'images')
+
+                with images.open('answers.yml') as yml_stream:
+                    answers = json.dumps(yaml.load(yml_stream))
+
+                if total_questions == 0:
+                    raise Exception()
+
+                questions = []
+                for no in range(total_questions):
+                    image_bytes = images.read(f'images/{no}.jpg')
+
+                    q = ImageClassificationQuestion(
+                        evaluation=evaluation, text=question_text,
+                        order=no,
+                        answers=answers,
+                        image=ContentFile(image_bytes, f'{evaluation.id}_{no}.jpg'),
+                    )
+                    q.save()
+                    questions.append(q)
+            return total_questions
+        except Exception:
+            raise Exception('Zip parsing failed. Most likely the structure is wrong')
 
 
 __all__ = ['Evaluation', 'Question', 'ImageSelectionQuestion', 'ImageClassificationQuestion']

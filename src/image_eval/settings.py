@@ -14,17 +14,18 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VAR = os.environ.get('VAR_DIR', os.path.join('var'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '_%shj@zq6u!uxi5&1gkispziey%$m+83hj$(sx1o0j7_f@4lsm'
+SECRET_KEY = os.environ.get('SECRET_KEY', '_%shj@zq6u!uxi5&1gkispziey%$m+83hj$(sx1o0j7_f@4lsm')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(os.environ.get('DEBUG', True))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', 'pandasheaven.us.to']
 
 # Application definition
 
@@ -74,7 +75,7 @@ WSGI_APPLICATION = 'image_eval.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'var', 'db.sqlite3'),
+        'NAME': os.path.join(VAR, 'db.sqlite3')
     }
 }
 
@@ -115,5 +116,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'var/media')
+MEDIA_ROOT = os.path.join(VAR, 'media')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')

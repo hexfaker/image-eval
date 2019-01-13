@@ -2,11 +2,14 @@
 
 migrations:
 	rm -r image_eval/migrations
-	python manage.py makemigrations image_eval
+	python3 manage.py makemigrations image_eval
 
 pop: db
-	python manage.py shell -c "from image_eval.tests.populate import populate; populate();"
+	python3 manage.py shell -c "from image_eval.tests.populate import populate; populate();"
 
 db:
-	rm -rf var/*
-	python manage.py migrate
+	rm -rf ${VAR_DIR:-var}/*
+	python3 manage.py migrate
+
+static:
+	python3 manage.py collectstatic

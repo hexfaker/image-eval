@@ -20,7 +20,7 @@ lib/
 lib64/
 parts/
 sdist/
-src/var/
+/var/
 wheels/
 *.egg-info/
 .installed.cfg

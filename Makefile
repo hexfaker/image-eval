@@ -8,7 +8,7 @@ pop: db
 	python3 manage.py shell -c "from image_eval.tests.populate import populate; populate();"
 
 db:
-	rm -rf ${VAR_DIR:-var}/*
+#	rm -rf ${VAR_DIR:-var}/*
 	python3 manage.py migrate
 
 static:

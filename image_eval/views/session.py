@@ -5,14 +5,15 @@ from django.db.models import QuerySet, Max
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 
-from ..models import Question, Evaluation, Session, Assignment
 from .home import home
+from ..models import Question, Evaluation, Session, Assignment
 
 
 def render_question(request, session, question_no, error=False):
     current_question = Question.objects.get(evaluation=session.evaluation, order=question_no)
 
     if hasattr(current_question, 'imageselectionquestion'):
+
         return render(request, 'selection_question.html', dict(
             question=current_question.imageselectionquestion,
             evaluation=session.evaluation,
@@ -33,12 +34,13 @@ def session_view(request: HttpRequest, hash: str):
 
     if not session.completed:
         if request.method == 'POST':
-            question = Question.objects.get(id=int(request.POST['question_id']))
+            question = Question.objects.get_subclass(id=int(request.POST['question_id']))
 
             if 'answer' not in request.POST:
                 return render_question(request, session, question.order, True)
 
-            answer = int(request.POST['answer'])
+            raw_answer = request.POST['answer']
+            answer = question.get_real_answer(int(raw_answer))
 
             next_order = question.order + 1
 
@@ -48,7 +50,8 @@ def session_view(request: HttpRequest, hash: str):
             done_questions: QuerySet = Assignment.objects.filter(session=session)
 
             if done_questions.exists():
-                next_order = done_questions.aggregate(Max('question__order'))['question__order__max']
+                query_res = done_questions.aggregate(Max('question__order'))
+                next_order = query_res['question__order__max']
             else:
                 next_order = 0
 
@@ -78,6 +81,7 @@ def new_session(request: HttpRequest):
     session = Session.create_new(Evaluation.objects.get(id=evaluation_id), name, comment)
     session.save()
     return redirect('session', hash=session.hash, permanent=True)
+
 
 @login_required()
 def export_results(request: HttpRequest, id: int):

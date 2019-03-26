@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', '_%shj@zq6u!uxi5&1gkispziey%$m+83hj$(s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get('DEBUG', True))
 
-ALLOWED_HOSTS = ['localhost', 'pandasheaven.us.to']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'pandasheaven.us.to']
 
 # Application definition
 

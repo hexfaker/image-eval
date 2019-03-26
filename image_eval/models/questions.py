@@ -1,16 +1,17 @@
 import json
 import os
-from typing import Iterable
-from zipfile import ZipFile
-
 import yaml
+from django.contrib import admin
 from django.core.files.base import ContentFile
 from django.db import models, transaction
-from django.contrib import admin
 from django.db.models import QuerySet
 from django.forms import ModelForm, FileField, CharField
 from django.shortcuts import redirect
 from django.utils import timezone
+from model_utils.managers import InheritanceManager
+from typing import Iterable
+from zipfile import ZipFile
+import hashlib
 
 
 class Evaluation(models.Model):
@@ -32,6 +33,10 @@ class Question(models.Model):
     evaluation = models.ForeignKey(Evaluation, on_delete=models.CASCADE)
     text = models.CharField(max_length=1000)
     order = models.IntegerField()
+    objects = InheritanceManager()
+
+    def get_real_answer(self, answer):
+        raise NotImplemented()
 
 
 class ImageClassificationQuestion(Question):
@@ -42,6 +47,9 @@ class ImageClassificationQuestion(Question):
     def choices(self):
         parsed_answers = json.loads(self.answers)
         return list(zip(range(len(parsed_answers)), parsed_answers))
+
+    def get_real_answer(self, answer):
+        return answer
 
 
 class ImageSelectionQuestion(Question):
@@ -59,6 +67,27 @@ class ImageSelectionQuestion(Question):
     """
     left_image = models.ImageField()
     right_image = models.ImageField()
+
+    def _neeed_flip(self):
+        hash = int(hashlib.sha1(f"{self.id}".encode()).hexdigest(), 16)
+        return hash % 2 == 0
+
+    def get_left_image(self):
+        if self._neeed_flip():
+            return self.right_image
+        else:
+            return self.left_image
+
+    def get_right_image(self):
+        if self._neeed_flip():
+            return self.left_image
+        else:
+            return self.right_image
+
+    def get_real_answer(self, answer):
+        if self._neeed_flip():
+            return 1 - answer
+        return answer
 
 
 class EvaluationForm(ModelForm):

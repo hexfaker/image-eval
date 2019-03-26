@@ -4,14 +4,14 @@
 {% block answers-area %}
     <div class="w3-half w3-container w3-center">
         <label>
-            <img src="{{ question.left_image.url }}" style="width: 100%"/>
+            <img src="{{ question.get_left_image.url }}" style="width: 100%"/>
             Left
             <input class="w3-radio" type="radio" name="answer" value="0"/>
         </label>
     </div>
     <div class="w3-half w3-container w3-center">
         <label>
-            <img src="{{ question.right_image.url }}" style="width: 100%"/>
+            <img src="{{ question.get_right_image.url }}" style="width: 100%"/>
             Right
             <input class="w3-radio" type="radio" name="answer" value="1"/>
         </label>

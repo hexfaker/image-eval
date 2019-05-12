@@ -7,13 +7,24 @@ from PIL import Image
 
 from ..models import *
 
+from django.contrib.auth import get_user_model
+
+# see ref. below
+UserModel = get_user_model()
+
+if not UserModel.objects.filter(username='a').exists():
+    user=UserModel.objects.create_user('a', password='a')
+    user.is_superuser=True
+    user.is_staff=True
+    user.save()
+
 
 def populate():
     e = Evaluation(title='Test', created_at=timezone.now(), type='SEL', total_questions=2)
     e.save()
 
-    i1 = Image.new('RGB', (640, 480), (255, 0, 0))
-    i2 = Image.new('RGB', (640, 480), (0, 255, 0))
+    i1 = Image.new('RGB', (640, 1200), (255, 0, 0))
+    i2 = Image.new('RGB', (640, 1200), (0, 255, 0))
 
     b1 = to_bytes(i1)
     b2 = to_bytes(i2)

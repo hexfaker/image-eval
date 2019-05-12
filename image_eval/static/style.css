@@ -1,0 +1,16 @@
+.selection-image {
+    height: 75vh;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.selection-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.selection-radio:checked + img {
+    border: 5px solid blue;
+}

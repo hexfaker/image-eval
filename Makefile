@@ -7,8 +7,11 @@ migrations:
 pop: db
 	python3 manage.py shell -c "from image_eval.tests.populate import populate; populate();"
 
-db:
-#	rm -rf ${VAR_DIR:-var}/*
+clean:
+	rm -rf var/media
+	rm -f var/db.sqlite3
+
+db: clean
 	python3 manage.py migrate
 
 static:

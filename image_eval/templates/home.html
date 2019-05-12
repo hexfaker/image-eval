@@ -5,7 +5,7 @@
         <form class="w3-padding-64" action="{% url 'new_session' %}" method="post">
             {% csrf_token %}
             <div class="w3-content w3-container">
-                <label>Evaluation</label>
+                <label>Опрос</label>
                 <select name="evaluation_id" style="min-width: 70%">
                     {% for id, name in evaluations.items %}
                         <option value="{{ id }}">{{ name }}</option>
@@ -13,12 +13,12 @@
                 </select>
             </div>
             <div class="w3-row w3-margin w3-container">
-                <input type="text" {% if error %}class="w3-border-red w3-border" {% endif %} name="name" placeholder="Your name"/>
+                <input type="text" {% if error %}class="w3-border-red w3-border" {% endif %} name="name" placeholder="Ваше имя"/>
             </div>
             <div class="w3-row w3-margin">
-                <textarea name="comment" rows="3" cols="50" placeholder="Optional comment"></textarea>
+                <textarea name="comment" rows="3" cols="50" placeholder="Комментарий (опционально)"></textarea>
             </div>
-            <input class="w3-middle w3-margin" type="submit" value="GO"/>
+            <input class="w3-middle w3-margin" type="submit" value="Поехали!"/>
         </form>
     </div>
 {% endblock %}

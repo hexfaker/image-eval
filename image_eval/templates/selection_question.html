@@ -3,17 +3,19 @@
 {% endblock %}
 {% block answers-area %}
     <div class="w3-half w3-container w3-center">
-        <label>
-            <img src="{{ question.get_left_image.url }}" style="width: 100%"/>
-            Left
-            <input class="w3-radio" type="radio" name="answer" value="0"/>
+        <label for="radio-left">
+            <input class="w3-radio selection-radio"
+                   type="radio" name="answer" value="0"
+                   id="radio-left" accesskey="r"/>
+            <img src="{{ question.get_left_image.url }}" class="selection-image"/>
         </label>
     </div>
     <div class="w3-half w3-container w3-center">
-        <label>
-            <img src="{{ question.get_right_image.url }}" style="width: 100%"/>
-            Right
-            <input class="w3-radio" type="radio" name="answer" value="1"/>
+        <label for="radio-right">
+            <input class="w3-radio selection-radio" type="radio"
+                   name="answer" value="1" id="radio-right"
+                    accesskey="r"/>
+            <img src="{{ question.get_right_image.url }}" class="selection-image"/>
         </label>
     </div>
 {% endblock %}

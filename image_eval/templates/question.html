@@ -1,6 +1,21 @@
 {% extends "base.html" %}
 {% block title %}{{ evaluation.title }}: {{ question.order|add:"1" }}/{{ evaluation.total_questions }}{% endblock %}
 {% block content %}
+    <script type="text/javascript">
+        function submitForm() {
+            $("#question-form").submit();
+        }
+
+        // Submit form hotkey
+        hotkeys('space', submitForm);
+
+        $(document).ready(function () {
+            // Auto-submit after election hook
+            $("input:radio").change(function () {
+                setTimeout(submitForm, 500)
+            });
+        });
+    </script>
     <div class="w3-container w3-center">
         <p class="w3-large">{{ evaluation.title }}: {{ question.order|add:"1" }}/{{ evaluation.total_questions }}</p>
         <p>{{ question.text }}</p>
@@ -14,7 +29,7 @@
             <div class="w3-container w3-margin w3-red">Нужно выбрать какой нибудь ответ!</div>
         {% endif %}
         <div class="w3-row">
-            <form class="w3-container" method="post">
+            <form id="question-form" class="w3-container" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="question_id" value="{{ question.id }}"/>
                 <div class="w3-row-padding">

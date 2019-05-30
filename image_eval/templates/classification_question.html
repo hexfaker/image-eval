@@ -1,5 +1,10 @@
 {% extends "question.html" %}
 {% block question-area %}
+    <script type="text/javascript">
+        hotkeys('1,2,3,4,5,6,7,8,9', function(event,handler) {
+            $("#variant-" + (parseInt(handler.key) - 1)).trigger("click");
+        });
+    </script>
     <div class="w3-content w3-container w3-center">
         <img src="{{ question.image.url }}" style="max-height: 400px;width: 100%; object-fit: contain"/>
     </div>
@@ -9,7 +14,7 @@
         {% for value, name in question.choices %}
             <div class="w3-row">
                 <label>
-                    <input class="w3-radio" type="radio" name="answer" value="{{ value }}">
+                    <input class="w3-radio" type="radio" name="answer" id="variant-{{ value }}" value="{{ value }}">
                     {{ name }}
                 </label>
             </div>

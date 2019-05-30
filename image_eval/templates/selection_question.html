@@ -2,6 +2,11 @@
 {% block question-area %}
 {% endblock %}
 {% block answers-area %}
+    <script type="text/javascript">
+        hotkeys('left,right', function(event,handler) {
+            $("#radio-" + handler.key).trigger("click");
+        });
+    </script>
     <div class="w3-half w3-container w3-center">
         <label for="radio-left">
             <input class="w3-radio selection-radio"

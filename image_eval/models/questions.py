@@ -1,5 +1,8 @@
+import hashlib
 import json
-import os
+from typing import List
+from zipfile import ZipFile
+
 import yaml
 from django.contrib import admin
 from django.core.files.base import ContentFile
@@ -9,9 +12,6 @@ from django.forms import ModelForm, FileField, CharField
 from django.shortcuts import redirect
 from django.utils import timezone
 from model_utils.managers import InheritanceManager
-from typing import Iterable
-from zipfile import ZipFile
-import hashlib
 
 
 class Evaluation(models.Model):
@@ -97,9 +97,6 @@ class EvaluationForm(ModelForm):
 
 @admin.register(Evaluation)
 class EvaluationAdmin(admin.ModelAdmin):
-    class InvalidZip(Exception):
-        pass
-
     list_display = ['id', 'title', 'type', 'total_questions', 'created_at']
     ordering = ['created_at']
     actions = ['export_result']
@@ -140,60 +137,79 @@ class EvaluationAdmin(admin.ModelAdmin):
     def make_selection_questions_from_zip(zip_file_stream, question_text, evaluation):
         try:
             with ZipFile(zip_file_stream) as images:
-                total_questions = EvaluationAdmin.get_total_questions(images.namelist(), 'left')
+                baseline_images = EvaluationAdmin.get_fnames_with_prefix(
+                    images, 'baseline/'
+                )
+                proposed_images = EvaluationAdmin.get_fnames_with_prefix(
+                    images, 'proposed/'
+                )
+
+                # Remove all prefixes and exts to match names
+                # proposed/first.jpg -> first
+                baseline_image_names = {
+                    name.rsplit('/', 1)[1].rsplit('.', 1)[0] for name in baseline_images
+                }
+                proposed_image_names = {
+                    name.rsplit('/', 1)[1].rsplit('.', 1)[0] for name in proposed_images
+                }
+
+                if baseline_image_names != proposed_image_names:
+                    raise Exception(
+                        "Proposed and baseline image sets doesn't match"
+                    )
+
+                image_names = baseline_image_names
+
+                total_questions = len(image_names)
 
                 if total_questions == 0:
-                    raise Exception()
+                    raise Exception("There must be at least one question")
 
                 questions = []
-                for no in range(total_questions):
-                    left_image_bytes = images.read(f'left/{no}.jpg')
-                    right_image_bytes = images.read(f'right/{no}.jpg')
+                for no, name in enumerate(sorted(image_names)):
+                    # Get image bytes without knowing extension
+                    baseline_bytes = images.read(
+                        EvaluationAdmin.get_fnames_with_prefix(images, f'baseline/{name}')[0]
+                    )
+                    proposed_bytes = images.read(
+                        EvaluationAdmin.get_fnames_with_prefix(images, f'proposed/{name}')[0]
+                    )
 
                     q = ImageSelectionQuestion(
                         evaluation=evaluation, text=question_text,
                         order=no,
-                        left_image=ContentFile(left_image_bytes, f'{evaluation.id}_{no}_l.jpg'),
-                        right_image=ContentFile(right_image_bytes, f'{evaluation.id}_{no}_r.jpg')
+                        left_image=ContentFile(baseline_bytes, f'{evaluation.id}_{no}_l.jpg'),
+                        right_image=ContentFile(proposed_bytes, f'{evaluation.id}_{no}_r.jpg')
                     )
                     q.save()
                     questions.append(q)
             return total_questions
-        except Exception:
-            raise Exception('Zip parsing failed. Most likely the structure is wrong')
+        except Exception as e:
+            raise Exception('Zip parsing failed. Most likely the structure is wrong') from e
 
     @staticmethod
-    def get_total_questions(fnames, prefix):
-        total_questions = 0
-        left_image_names: Iterable[str] = \
-            filter(lambda s: s.startswith(prefix), fnames)
-
-        for name in left_image_names:
-            fname = name.split('/')[1]
-
-            if len(fname) != 0:
-                no = int(os.path.splitext(fname)[0]) + 1
-
-                if no > total_questions:
-                    total_questions = no
-
-        return total_questions
+    def get_fnames_with_prefix(zip: ZipFile, prefix: str) -> List[str]:
+        filenames = [item.filename for item in zip.filelist]
+        return [name for name in filenames if name.startswith(prefix) and len(name) > len(prefix)]
 
     @staticmethod
     def make_classification_questions_from_zip(zip_file_stream, question_text, evaluation):
         try:
             with ZipFile(zip_file_stream) as images:
-                total_questions = EvaluationAdmin.get_total_questions(images.namelist(), 'images')
+                image_names = EvaluationAdmin.get_fnames_with_prefix(
+                    images, 'images/'
+                )
 
                 with images.open('answers.yml') as yml_stream:
                     answers = json.dumps(yaml.load(yml_stream))
 
+                total_questions = len(image_names)
                 if total_questions == 0:
-                    raise Exception()
+                    raise Exception("There must be at least one question")
 
                 questions = []
-                for no in range(total_questions):
-                    image_bytes = images.read(f'images/{no}.jpg')
+                for no, name in enumerate(image_names):
+                    image_bytes = images.read(name)
 
                     q = ImageClassificationQuestion(
                         evaluation=evaluation, text=question_text,
@@ -204,8 +220,8 @@ class EvaluationAdmin(admin.ModelAdmin):
                     q.save()
                     questions.append(q)
             return total_questions
-        except Exception:
-            raise Exception('Zip parsing failed. Most likely the structure is wrong')
+        except Exception as e:
+            raise Exception('Zip parsing failed. Most likely the structure is wrong') from e
 
 
 __all__ = ['Evaluation', 'Question', 'ImageSelectionQuestion', 'ImageClassificationQuestion']
